@@ -1,0 +1,748 @@
+<!doctype html>
+<html lang="ko">
+<head>
+	<meta charset="utf-8" />
+	<title>Block calculator</title>
+    <style>
+        * { margin: 0; padding: 0; }
+        body, html { width: 100vw; height: 100vh; background-color: #eee;}
+
+        .header {
+            display: flex;
+            position: relative;
+            width:100%;
+            height: 50px;
+            align-items: center;
+        }
+
+        .divider {
+            background-color: black;
+            width:100%;
+            height:2px;
+        }
+
+        .header #block {
+            background-color: #A0D468;
+            position:absolute;
+            margin-left:10px;
+        }
+
+        .header #result {
+            background-color: #A0D468;
+            position:absolute;
+            left: 60%;
+            margin-left:10px;
+        }
+
+        .shortcut {
+            width:100%;
+            height:200px;
+            position: relative;
+        }
+
+        .shortcut__column {
+            display:flex;
+            flex-direction: column;
+        }
+
+        .shortcut__column:first-child{
+            position:absolute;
+            top:0px;
+            left:0px;
+        }
+
+        .shortcut__column:last-child{
+            position:absolute;
+            top:0px;
+            left:60%;
+        }
+
+        .shortcut__row{
+            display:flex;
+        }
+
+        #cal_row{
+            padding-top:30px;
+        }
+
+        .shortcut__btn {
+            background-color: thistle;
+            margin:3px 10px;
+            width:90px;
+            height:25x;
+            border-radius: 5px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size:20px;
+            color:black;
+        }
+
+        .textbox {
+            background-color: white;
+            margin: 3px 10px;
+            width: 310px;
+            height: 40px;
+            border: 1px bold black;
+            border-radius: 5px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 20px;
+            color:black;
+        }
+
+        .cal_btn {
+            background-color: #ffc107;
+            margin: 3px 10px;
+            width: 90px;
+            height: 40px;
+            border: 1px bold black;
+            border-radius: 5px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 20px;
+            color:black;
+        }
+    </style>
+</head>
+
+<body>
+    <script src='https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js' type='text/javascript'></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/fabric.js/2.4.6/fabric.min.js" type="text/javascript"></script>
+    <script src="resources/math.js" type ="text/javascript"></script>
+    <script>
+
+const parser = math.parser();
+const SECTION_RATE = 3.0/5.0;
+const SYMBOL_WIDTH = 50;
+const SYMBOL_HEIGHT = 50;
+const SYMBOL_MARGIN = 40;
+const SELECTED_COLOR = '#ffc107';
+const UNSELECTED_COLOR = '#7952b3'
+
+let MathApp = {};
+
+var isCtrl = false;
+
+MathApp.symbol_paths = {
+        '+':    "add",
+        '-':    "sub",
+        '*':    "mul",
+        '/':    "div",
+        '(':    "parenthesis_open",
+        ')':    "parenthesis_close",
+        '[':    "squarebracket_open",
+        ']':    "squarebracket_close",
+        '{':    "curlybrace_open",
+        '}':    "curlybrace_close",
+        '.':    "period",
+        ',':    "comma",
+        ':':    "colon",
+        ';':    "semicolon",
+        '=':    "equal",
+        '>':    "more",
+        '<':    "less",
+        '!':    "exclamation",
+        '%':    "percent",
+        '∞':    "infinity",
+        '^':    "caret",
+};
+
+MathApp.blocks = [];
+MathApp.selected_block = null;
+
+MathApp.is_mouse_dragging = false;
+MathApp.mouse_drag_prev = {x:0, y:0};
+
+MathApp.block_types = {
+    UNDEFINED:  "undefind",
+    SYMBOL:     "symbol",
+};
+
+MathApp.initialize = function() {
+
+    for(let i=0; i <= 9; i++)
+    {
+        let key = i.toString();
+        let value = key;
+        this.symbol_paths[key] = value;
+    }
+
+    for(let c = "a".charCodeAt(0); c <= "z".charCodeAt(0); c++)
+    {
+        let key = String.fromCharCode(c);
+        let value = key;
+        this.symbol_paths[key] = value;
+    }
+
+    this.canvas = new fabric.Canvas("a", {
+        backgroundColor: "#eee",
+        hoverCursor: "default",
+        selection: false,
+        width: window.innerWidth,
+        height: window.innerHeight - 200
+    });
+
+    this.canvas.add(new fabric.Line([0,0,0,window.innerHeight],{
+      left:window.innerWidth * (SECTION_RATE),
+      top: 0,
+      stroke: 'black'
+    }));
+
+    $(document).keypress(function(event) {
+        let key = String.fromCharCode(event.which);
+        MathApp.handleKeyPress(key);
+    });
+
+    $(document).keydown(function(event) {
+      let key;
+      if(event.which == 13){
+        key = "enter";
+      }
+      else{
+        key = String.fromCharCode(event.which);
+      }
+      if(key == ''){
+        isCtrl = true;
+      }
+        MathApp.handleKeyDown(key);
+    });
+     
+    $(document).keyup(function(event){
+      let key = String.fromCharCode(event.which);
+      if(key == ''){
+        isCtrl = false;
+      }
+    });
+    $(document).mousedown(function(event) {
+        let p = {x: event.pageX, y: event.pageY};
+        MathApp.handleMouseDown(p);
+    });
+    $(document).mouseup(function(event) {
+        let p = {x: event.pageX, y: event.pageY};
+        MathApp.handleMouseUp(p);
+    });
+    $(document).mousemove(function(event) {
+        let p = {x: event.pageX, y: event.pageY};
+        MathApp.handleMouseMove(p);
+    });
+}
+
+MathApp.shortcutPress = function(keyword) {
+
+  let size = {
+    width : SYMBOL_WIDTH * keyword.length,
+    height : SYMBOL_HEIGHT
+
+  };
+
+  let position = {
+    x : (Math.random() * (this.canvas.width - size.width)
+          + size.width/2) * (SECTION_RATE),
+    y : (Math.random() * (this.canvas.height - size.height)
+          + size.height/2) - (window.innerHeight * (1.0 / 100.0))
+  };
+  new MathApp.Symbol(position, size, keyword);
+
+}
+
+
+
+MathApp.handleKeyPress = function(key) {
+    if (key in this.symbol_paths)
+    {
+        let size = {
+            width : SYMBOL_WIDTH,
+            height : SYMBOL_HEIGHT
+        };
+
+        let position = {
+            x : (Math.random() * (this.canvas.width-size.width)
+                  + size.width / 2) * (SECTION_RATE),
+            y : (Math.random() * (this.canvas.height-size.height)
+                  + size.height / 2) - (window.innerHeight * (1.0 / 100.0))
+        };
+        new MathApp.Symbol(position, size, key);
+    }
+}
+
+
+MathApp.handleKeyDown = function(key) {
+  if( MathApp.selected_block != null ) 
+  {
+    if(key == '') 
+    {
+      MathApp.selected_block.destroy();
+      MathApp.selected_block = null;
+      return;
+    }
+
+    else if( isCtrl == true && key == 'X' )
+    {
+      MathApp.divide();
+      MathApp.selected_block = null;
+      return;
+    }
+    
+    else if( isCtrl == true && key== 'V' )
+    {
+      MathApp.duplicate();
+    }
+
+    if( key == "enter" )
+    {
+      MathApp.evaluate(MathApp.selected_block);
+    }
+  }
+}
+
+MathApp.handleMouseDown = function(window_p) {
+    if(MathApp.isInCanvas(window_p))
+    {
+        let canvas_p = MathApp.transformToCanvasCoords(window_p);
+
+        if( MathApp.selected_block != null )
+        {
+            MathApp.selected_block.onDeselected();
+            MathApp.selected_block = null;
+        }
+        let block = MathApp.findBlockOn(canvas_p);
+        if(block != null)
+        {
+            MathApp.selected_block = block;
+            MathApp.selected_block.onSelected();
+        }
+
+        MathApp.is_mouse_dragging = true;
+        MathApp.mouse_drag_prev = canvas_p;
+        MathApp.canvas.requestRenderAll();
+    }
+    else
+    {
+        MathApp.is_mouse_dragging = false;
+        MathApp.mouse_drag_prev = {x:0, y:0};
+    }
+}
+
+MathApp.handleMouseMove = function(window_p) {
+  let canvas_coord = MathApp.transformToCanvasCoords(window_p);
+  if(MathApp.is_mouse_dragging)
+  {
+    if(MathApp.selected_block != null){
+      let tx = canvas_coord.x - MathApp.mouse_drag_prev.x;
+      let ty = canvas_coord.y - MathApp.mouse_drag_prev.y;
+      MathApp.selected_block.translate({x: tx, y: ty});
+    }
+    MathApp.mouse_drag_prev = canvas_coord;
+    MathApp.canvas.requestRenderAll();
+  }
+}
+
+MathApp.handleMouseUp = function(window_p) {
+
+    const canvas_coord = MathApp.transformToCanvasCoords(window_p);
+    const target = MathApp.findBlockOn(canvas_coord);
+
+    if(target != null){
+      const block = MathApp.is_overlapped();
+      if(block != undefined)
+        MathApp.assemble(block);
+    }
+
+    if(MathApp.is_mouse_dragging){
+        MathApp.is_mouse_dragging = false;
+        MathApp.mouse_drag_prev = {x:0, y:0};
+    }
+    MathApp.canvas.requestRenderAll();
+}
+
+MathApp.is_overlapped = function(){
+  const selectedBlock = MathApp.selected_block;
+  let overlapedBlock = undefined;
+
+  if(selectedBlock != null)
+  {
+    MathApp.blocks.forEach(block => {
+      const axisX = Math.abs(selectedBlock.position.x - block.position.x);
+      const axisY = Math.abs(selectedBlock.position.y - block.position.y);
+      
+
+      if((axisX == 0) && (axisY == 0))
+      {
+        return;
+      }
+
+      else if((axisX <= (selectedBlock.size.width / 2) + (block.size.width / 2)) &&
+       (axisY <= (selectedBlock.size.height) + (block.size.height / 2)))
+      {
+        MathApp.canvas.requestRenderAll();
+        overlapedBlock = block;
+      } 
+    })
+    return overlapedBlock;
+  }
+}
+
+MathApp.assemble = function(target) {
+  const selected_block = MathApp.selected_block;
+
+  let size = {
+    width: target.size.width + selected_block.size.width,
+    height: target.size.height
+  };
+
+  let position = {
+    x: target.position.x,
+    y: target.position.y
+  };
+
+  if( target.position.x <= selected_block.position.x )
+  {
+    new MathApp.Symbol(position, size, target.name + selected_block.name);
+  } 
+
+  else 
+  {
+    new MathApp.Symbol(position, size, selected_block.name + target.name);
+  }
+  
+  selected_block.destroy();
+  target.destroy();
+  MathApp.canvas.bringToFront(item);
+
+  MathApp.selected_block = null;
+}
+
+MathApp.divide = function() {
+  if( MathApp.selected_block == null || MathApp.selected_block == undefined ) {
+    return;
+  }
+
+  let selectedBlock = MathApp.selected_block;
+
+  for(var i = 0; i < selectedBlock.name.length; i++){
+
+    let position = {
+        x: selectedBlock.position.x + 55 * i,
+        y: selectedBlock.position.y
+    };
+
+    this.makeASymbol(selectedBlock.name[i], position)
+  }
+
+  selectedBlock.destroy();
+  MathApp.selected_block = null;
+
+}
+
+MathApp.makeASymbol = function(name, position) {
+  let size = {
+    width: SYMBOL_WIDTH,
+    height: SYMBOL_HEIGHT
+  };
+
+  new MathApp.Symbol(position, size, name);
+}
+
+MathApp.transformToCanvasCoords = function(window_p) {
+    let block = MathApp.canvas.getElement().getBoundingClientRect();
+    let canvas_p = {
+        x : window_p.x - block.left,
+        y : window_p.y - block.top
+    };
+    return canvas_p;
+}
+
+MathApp.isInCanvas = function(window_p) {
+    let rect = MathApp.canvas.getElement().getBoundingClientRect();
+    if( window_p.x >= rect.left &&
+        window_p.x < rect.left + rect.width &&
+        window_p.y >= rect.top &&
+        window_p.y < rect.top + rect.height )
+    {
+        return true;
+    }
+    else{
+        return false;
+    }
+}
+
+MathApp.findBlockOn = function(canvas_coord) {
+    const x_pos = canvas_coord.x;
+    const y_pos = canvas_coord.y;
+
+    for(let i = 0; i < this.blocks.length; i++)
+    {
+        let block = this.blocks[i];
+        if( x_pos >= block.position.x - block.size.width / 2 &&
+          x_pos <= block.position.x + block.size.width - 25 &&
+          y_pos >= block.position.y - block.size.height - 25 &&
+          y_pos <= block.position.y + block.size.height + 25)
+          { return block; }
+    }
+    return null;
+}
+
+MathApp.Block = function(position, size) {
+    this.position = position;
+    this.size = size;
+    this.type = MathApp.block_types.UNDEFINED;
+    this.visual_items = [];
+
+    MathApp.blocks.push(this);
+}
+
+MathApp.Block.prototype.onSelected = function() {
+  this.visual_items[this.visual_items.length - 1].set({
+      stroke: SELECTED_COLOR,
+  });
+
+  this.visual_items.forEach(item => {
+      MathApp.canvas.bringToFront(item);
+  });
+}
+
+MathApp.Block.prototype.onDeselected = function() {
+    this.visual_items[this.visual_items.length-1].set({
+        stroke: UNSELECTED_COLOR
+    });
+}
+
+MathApp.Block.prototype.moveTo = function(p) {
+    let tx = p.x - this.position.x;
+    let ty = p.y - this.position.y;
+
+    this.translate({x: tx, y: ty});
+}
+
+MathApp.Block.prototype.translate = function(v) {
+    this.position.x += v.x;
+    this.position.y += v.y;
+
+    this.visual_items.forEach(item => {
+        item.left += v.x;
+        item.top += v.y;
+    });
+}
+
+MathApp.Block.prototype.destroy = function() {
+    if(this == MathApp.selected_block)
+    {
+        MathApp.selected_block = null;
+        this.onDeselected();
+    }
+
+    this.visual_items.forEach(item => {
+        MathApp.canvas.remove(item);
+    });
+    this.visual_items = [];
+
+    let index = MathApp.blocks.indexOf(this);
+    if(index > -1)
+    {
+        MathApp.blocks.splice(index, 1);
+    }
+}
+
+MathApp.Symbol = function(position, size, name) {
+  MathApp.Block.call(this, position, size);
+  this.type = MathApp.block_types.SYMBOL;
+  this.name = name;
+  let block = this;
+  let background = new fabric.Rect({
+      left: position.x - size.width/2,
+      top: position.y - size.height/2,
+      width: size.width,
+      height: size.height,
+      fill: "rgba(255,255,255,1)",
+      stroke: "rgba(0,0,0,0)",
+      strokeLineJoin: 'round',
+      rx: 15,
+      ry: 15,
+      selectable: false
+  });
+
+  MathApp.canvas.add(background);
+  block.visual_items.push(background);
+
+  for(let i=0; i < name.length; i++){
+    if(name[i] in MathApp.symbol_paths){
+      let path = "resources/" + MathApp.symbol_paths[name[i]] + ".jpg";
+      fabric.Image.fromURL(path, function(img) {
+  
+        img.scaleToWidth(SYMBOL_WIDTH);
+        img.scaleToHeight(SYMBOL_HEIGHT);
+        let img_w = img.getScaledWidth();
+        let img_h = img.getScaledHeight();
+
+        img.set({
+            left: position.x - size.width / 2 + SYMBOL_WIDTH * i + 6,
+            top: position.y - img_h / 2,
+            selectable: false
+        });
+
+        let boundary = new fabric.Rect({
+            left: position.x - size.width/2,
+            top: position.y - size.height/2,
+            width: size.width,
+            height: size.height,
+            fill: "rgba(0,0,0,0)",
+            stroke: UNSELECTED_COLOR,
+            strokeLineJoin: 'round',
+            rx: 15,
+            ry: 15,
+            strokeWidth: 5,
+            selectable: false
+        });
+
+        
+        MathApp.canvas.add(img);
+        MathApp.canvas.add(boundary);
+
+        block.visual_items.push(img);
+        block.visual_items.push(boundary);
+
+      });
+    }
+  }
+}
+
+MathApp.Symbol.prototype = Object.create(MathApp.Block.prototype);
+
+MathApp.evaluate = function(block) {
+  let input = block.name
+  let result = ""
+
+  try { 
+    result = parser.eval(input).toString()
+    let tokens = result.split(' ');
+
+    if ( tokens[0] == 'function' ){
+      result = tokens[0];
+    } else {
+      result = result.replace(/(\s*)/g, '');
+    }
+
+    let position = { x: SYMBOL_MARGIN + window.innerWidth * (SECTION_RATE) 
+      + (result.length * (SYMBOL_WIDTH / 2)), y: block.position.y };
+    let size = { width: SYMBOL_WIDTH * (result.length), height: SYMBOL_HEIGHT};
+    new MathApp.Symbol(position, size, result);
+  }
+
+  catch(e) {
+    var cur = document.getElementById("errorBox");
+    cur.textContent = e
+  }
+
+}
+
+MathApp.duplicate = function() {
+
+  let block = MathApp.selected_block;
+  let size = {
+    width: block.size.width,
+    height: block.size.height
+  }
+  let position = { x: block.position.x + 30, y: block.position.y + 30};
+  new MathApp.Symbol(position, size, block.name);
+
+}
+
+
+MathApp.calPress = function(keyword) {
+
+  if(keyword == 'Clear') {
+
+    for(let i = 0; i < this.blocks.length; i++)
+    {
+        let block = this.blocks[i];
+        setTimeout(function() {
+          block.destroy();
+      },35);
+  
+    }
+
+  } else if(keyword == 'Disassemble') {
+
+      MathApp.divide();
+      MathApp.selected_block = null;
+
+  } else if(keyword == 'Execute') {
+
+    MathApp.evaluate(MathApp.selected_block);
+
+  } else if(keyword == 'Duplicate') {
+
+    MathApp.duplicate();
+
+  } else if(keyword == 'Delete') {
+    MathApp.selected_block.destroy();
+      MathApp.selected_block = null;
+  }
+
+}
+
+
+//
+$(document).ready(function() {
+    MathApp.initialize();
+});
+
+
+
+
+
+
+    </script>
+    
+    <div class="header">
+        <h2 id="block">Block Section</h2>
+        <h2 id="result">Result Section</h2>
+    </div>
+    <div class="divider"></div>
+	<div id="capture" style="padding: 0px; background: #eee;">
+		<canvas id="a">
+	        Canvas not supported
+	    </canvas>
+	</div>
+    <div class="divider"></div>
+    <div class="shortcut">
+        <div class="shortcut__column">
+            <h2 class="shortcut__header">Shortcuts</h2>
+            <div class="shortcut__row">
+                <span class="shortcut__btn" onclick="{MathApp.shortcutPress('pi')}">pi</span>
+                <span class="shortcut__btn" onclick="{MathApp.shortcutPress('==')}">==</span>
+                <span class="shortcut__btn" onclick="{MathApp.shortcutPress('!=')}">!=</span>
+                <span class="shortcut__btn" onclick="{MathApp.shortcutPress('<=')}"><=</span>
+                <span class="shortcut__btn" onclick="{MathApp.shortcutPress('>=')}">>=</span>
+                <span id="errorBox" class="textbox">errorBox</span>
+            </div>
+            <div class="shortcut__row">
+                <span class="shortcut__btn" onclick="{MathApp.shortcutPress('exp')}">exp</span>
+                <span class="shortcut__btn" onclick="{MathApp.shortcutPress('log')}">log</span>
+                <span class="shortcut__btn" onclick="{MathApp.shortcutPress('sin')}">sin</span>
+                <span class="shortcut__btn" onclick="{MathApp.shortcutPress('cos')}">cos</span>
+                <span class="shortcut__btn" onclick="{MathApp.shortcutPress('tan')}">tan</span>
+            </div>
+            <div class="shortcut__row">
+                <span class="shortcut__btn" onclick="{MathApp.shortcutPress('det')}">det</span>
+                <span class="shortcut__btn" onclick="{MathApp.shortcutPress('cross')}">cross</span>
+                <span class="shortcut__btn" onclick="{MathApp.shortcutPress('inverse')}">inverse</span>
+            </div>
+        </div>
+        <div class="shortcut__column">
+            <div class="shortcut__row" id="cal_row">
+                <span class="cal_btn" onclick="{MathApp.calPress('Clear')}">Clear</span>
+                <span class="cal_btn" onclick="{MathApp.calPress('Execute')}">Execute</span>
+            </div>
+            <div class="shortcut__row">
+                <span class="cal_btn" onclick="{MathApp.calPress('Delete')}">Delete</span>
+                <span class="cal_btn" onclick="{MathApp.calPress('Disassemble')}">Divide</span>
+                <span class="cal_btn" onclick="{MathApp.calPress('Duplicate')}">Duplicate</span>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
