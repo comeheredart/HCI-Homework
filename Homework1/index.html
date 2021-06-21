@@ -1,0 +1,996 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+  <title>YouTube Music</title>
+  <style>
+    body{
+      background: #dddddd
+    }
+
+    #canvas{
+      margin: 0px;
+      padding: 5px;
+      background: black;
+      border: thin inset black;
+    }
+
+
+  </style>
+</head>
+
+<body>
+  <h3>화면을 이동하려면 q, w 키를 이용하거나 하단 탭바 아이콘을 클릭하여 이동하세요!</h3>
+  <h3>하단의 뮤직 박스 플레이 버튼을 눌러서 'F.R.David의 Words' 를 재생해보세요</h3>
+  <canvas id='canvas' width='400' height='850'>
+    Canvas not supported
+  </canvas>
+  <script>
+
+      var context = document.getElementById('canvas').getContext('2d');
+      var page = 1;
+      const music = new Audio("music/words.mp3");
+
+      document.addEventListener('keydown', (event) => {
+        const keyValue = event.key;
+        if (keyValue == 'w') {
+          if (page < 3) {
+            context.clearRect(0, 0, canvas.width, canvas.height);
+            page++;
+
+            if (page == 2) {
+              drawSecondScreen();
+            }
+            else {
+              drawThirdScreen();
+            }
+          }
+        }
+
+        if (keyValue == 'q') {
+          if (page > 1) {
+            context.clearRect(0, 0, canvas.width, canvas.height);
+            page--;
+
+            if (page == 1) {
+              drawFirstScreen();
+            }
+            else {
+              drawSecondScreen();
+            }
+          }
+        }
+      })
+
+
+      function drawAllBackground() {
+          drawTopBar();
+
+          context.fillStyle = '#222222';
+          context.fillRect(0, 772, canvas.width, 100);
+
+          context.fillStyle = 'white';
+
+          drawLogo(35, 65, 15);
+          drawDeviceIcon(260, 60);
+          drawGlassIcon(320, 60, 15);
+          drawUserIcon(canvas.width - 20, 70, 20);
+
+      }
+    
+      function drawTopBar() {
+          drawText('5:43', 30, 25, '18px century', 0.5);
+          
+          context.fillRect(canvas.width - 91, 22, 5, 6);
+          context.fillRect(canvas.width - 85, 19, 5, 9);
+          context.fillRect(canvas.width - 79, 16, 5, 12); 
+          context.fillRect(canvas.width - 73, 13, 5, 15); 
+        
+          drawText('LTE', canvas.width - 63, 27, '16px century', 0.5);
+          
+          context.strokeStyle = 'gray';
+          context.lineWidth = 2;
+          context.strokeRect(canvas.width - 31, 15, 28, 13);
+          context.fillRect(canvas.width - 29, 16, 13, 11);
+          
+      }
+
+      function drawLine(xpos, ypos, dx, dy, linewidth, color) {
+        context.lineWidth = linewidth;
+        context.strokeStyle = color;
+
+        context.beginPath();
+        context.moveTo(xpos, ypos);
+        context.lineTo(dx, dy);
+        context.stroke();
+
+        context.lineWidth = 1;
+        context.strokeStyle = 'white';
+      }
+
+      function drawLogo(xpos, ypos, radius) {
+          context.fillStyle = 'red';
+          context.strokeStyle = 'white';
+          context.lineWidth = 2
+          context.beginPath();
+          context.arc(xpos, ypos, radius, 0, Math.PI*2);
+          context.fill();
+
+          context.beginPath();
+          context.arc(xpos, ypos, radius - 7, 0, Math.PI*2);
+          context.stroke();
+
+          context.beginPath();
+          context.moveTo(xpos - 2, ypos - 5);
+          context.lineTo(xpos + 5, ypos);
+          context.lineTo(xpos - 2, ypos + 5);
+          context.closePath();
+          context.fillStyle = 'white'
+          context.fill();
+
+          drawText("Music", 55, 75, '30px Arial Narrow', 1);
+
+          context.lineWidth = 1
+      }
+
+      function drawText(text, xpos, ypos, font, width, color) {
+        context.fillStyle = color;
+        context.strokeStyle = color;
+
+        context.font = font;
+        context.lineWidth = width
+        context.fillText(text, xpos, ypos);
+        context.strokeText(text, xpos, ypos);
+        
+        context.font = '10px century';
+        context.lineWidth = 1
+
+        context.fillStyle = 'white';
+        context.strokeStyle = 'white';
+      }
+
+
+      function drawDeviceIcon(xpos, ypos) {
+          //흰색 테두리 그리기
+          context.lineJoin = 'round';
+          context.lineWidth = 3;      
+          context.strokeRect(xpos, ypos, 25, 20);
+            
+          context.lineWidth = 1;
+
+          //회색 네모
+          context.fillStyle = 'gray';
+          context.fillRect(xpos + 4, ypos + 4, 17, 12);
+
+          //쪼그만 반원 그리기
+          context.beginPath();
+          context.arc(xpos - 1, ypos + 21, 15, Math.PI*1.5, 0);
+          context.lineTo(xpos - 1, ypos + 21);
+          context.lineTo(xpos - 1, ypos + 6);
+          context.fill();
+
+          //검은선 3개 그리기
+          context.strokeStyle = 'black';
+          context.lineWidth = 2;
+
+          context.beginPath();
+          context.arc(xpos - 1, ypos + 21, 15, Math.PI*1.3, Math.PI*0.2);
+          context.stroke();
+
+          context.beginPath();
+          context.arc(xpos - 1, ypos + 21, 10, Math.PI*1.3, Math.PI*0.2);
+          context.stroke();
+
+          context.beginPath();
+          context.arc(xpos - 1, ypos + 21, 5, Math.PI*1.3, Math.PI*0.2);
+          context.stroke();
+
+
+          context.fillStyle = 'white';
+          context.strokeStyle = 'white';
+          context.lineWidth = '1';
+          
+      }
+
+
+      function drawGlassIcon(xpos, ypos, radius) {
+          context.lineWidth = 3
+          context.beginPath();
+          context.arc(xpos + 7, ypos + 7, radius - 8, 0, Math.PI*2);
+          context.stroke();
+
+          drawLine(xpos + 13, ypos + 13, xpos + 20, ypos + 20, 3, 'white');
+
+          context.lineWidth = 1;
+      }
+
+
+      function drawGrid(context, color, stepx, stepy) {
+        context.strokeStyle = color;
+        context.lineWidth = 0.5;
+
+        for (var i = stepx + 0.5; i < context.canvas.width; i += stepx) {
+            context.beginPath();
+            context.moveTo(i, 0);
+            context.lineTo(i, context.canvas.height);
+            context.stroke();
+        }
+
+        for (var i = stepy + 0.5; i < context.canvas.height; i += stepy) {
+            context.beginPath();
+            context.moveTo(0, i);
+            context.lineTo(context.canvas.width, i);
+            context.stroke();
+        }
+    }
+
+      function drawUserIcon(xpos, ypos, radius) {
+          context.fillStyle = 'gray';
+          context.beginPath();
+          context.arc(xpos, ypos, radius, 0, Math.PI*2);
+          context.fill();
+
+          context.fillStyle = 'white';
+          context.beginPath();
+          context.arc(xpos, ypos - 5, 5, 0, Math.PI*2);
+          context.fill();
+
+          context.beginPath();
+          context.arc(xpos, ypos, radius, 0, Math.PI);
+          context.arc(xpos, ypos + radius, radius, Math.PI, Math.PI*2);
+          context.closePath();
+          context.fill();
+
+          context.strokeStyle = 'black'
+          context.beginPath();
+          context.lineWidth = 13
+          context.arc(xpos, ypos, radius, 0, Math.PI*2);
+          context.stroke();
+
+          context.strokeStyle = 'white';
+          context.lineWidth = 1;
+      }
+
+      function drawImage(xpos, ypos, width, height, src) {
+          var image = new Image();
+          image.src = src;
+          image.onload = function(e) {
+            context.drawImage(image, xpos, ypos, width, height);
+          }
+      }
+
+      function drawUpDown(isUp, xpos, ypos) {
+          if (isUp) {
+              //green triangle
+              context.beginPath();
+              context.moveTo(xpos, ypos);
+              context.lineTo(xpos - 5, ypos + 5);
+              context.lineTo(xpos + 5, ypos + 5);
+
+              context.closePath();
+              context.fillStyle = "rgb(0, 255, 0)"
+              context.fill();
+
+              context.fillStyle = 'white'
+          }
+          else {
+            context.beginPath();
+              context.moveTo(xpos - 5, ypos);
+              context.lineTo(xpos, ypos + 5);
+              context.lineTo(xpos + 5, ypos);
+
+              context.closePath();
+              context.fillStyle = "rgb(255, 0, 0)"
+              context.fill();
+
+              context.fillStyle = 'white'
+          }
+      }
+
+      function drawtridots(xpos, ypos, radius) {
+            context.fillStyle = 'white'
+            context.beginPath()
+            context.arc(xpos, ypos, radius, 0, Math.PI*2);
+            context.fill();
+
+            context.arc(xpos, ypos + 6, radius, 0, Math.PI*2);
+            context.fill();
+
+            context.arc(xpos, ypos + 12, radius, 0, Math.PI*2);
+            context.fill();
+      }
+
+
+      function TopSongs(image, rank, isUp, singer, title) {
+          if (this instanceof TopSongs == false) {
+              console.warn('Forgot to call with new');
+          }
+            this.image = image; 
+            this.rank = rank;
+            this.isUp = isUp;
+            this.singer = singer;  
+            this.title = title;
+      }
+
+      TopSongs.prototype.draw = function(xpos, ypos) {
+          drawImage(xpos, ypos, 52, 52, this.image);
+          drawUpDown(this.isUp, xpos + 65, ypos + 25);
+          
+          context.font = '18px tahoma';
+          context.fillText(this.title, xpos + 100, ypos + 15);
+
+          context.globalAlpha = 0.6;
+          drawText(this.singer, xpos + 100, ypos + 40, '18px tahoma', 0.1);
+          drawText(this.rank, xpos + 77, ypos + 33, '14px tahoma', 0.1);
+
+          context.globalAlpha = 1;
+          drawtridots(340, ypos + 20, 1.5);
+      }
+
+
+      function Genre(name, color) {
+          if (this instanceof Genre == false) {
+            console.warn('Forgot to call with new');
+          }
+
+          this.name = name;
+          this.color = color;
+
+      }
+
+      Genre.prototype.drawRect = function(xpos, ypos, isEnd) {
+
+         context.fillStyle = '#292929';
+
+        //화면 끝에 걸린 경우
+        if (isEnd == true) {
+            context.fillRect(xpos, ypos, canvas.width - xpos, 52);
+        }   
+        else {
+            context.fillRect(xpos, ypos, 160, 52);
+        }
+
+        context.fillStyle = this.color;
+        context.fillRect(xpos, ypos, 7, 52);
+
+        context.fillStyle = 'white';
+
+
+        context.strokeStyle = 'white';
+        context.font = '18px century';
+        context.fillText(this.name, xpos + 20, ypos + 32);
+
+      }
+      
+
+      function Theme(title) {
+          if (this instanceof Theme == false) {
+              console.warn('Forgot to call with new');
+          }
+
+          this.title = title;
+      }
+
+      Theme.prototype.drawTheme = function(xpos, textWidth) {
+          context.lineWidth = 0.5;
+          context.fillStyle = '#1D1D1D';
+
+          //너비에 맞게 배경 박스 출력
+          context.beginPath();
+          context.moveTo(xpos, 130);
+          context.lineTo(xpos + textWidth, 130);
+          context.arc(xpos + textWidth, 150, 20, 1.5*Math.PI, 0.5*Math.PI, false);
+          context.lineTo(xpos, 170);
+          context.arc(xpos, 150, 20, 0.5*Math.PI, 1.5*Math.PI, false);
+
+          context.stroke();
+          context.fill();
+
+          context.lineWidth = 1;
+          context.fillStyle = 'white';
+
+          //텍스트 출력
+          context.font = '17px tahoma';
+          context.fillText(this.title, xpos - 1, 157);
+      }
+
+      function Top100Box(textInBox) {
+        if (this instanceof Top100Box == false) {
+          console.warn('Forgot to call with new');
+        }
+        this.textInBox = textInBox;
+
+      }
+
+      Top100Box.prototype.drawBox = function(xpos, ypos) {
+
+        // 배경 그리기
+        context.beginPath();
+        drawLine(xpos, ypos, xpos + 155, ypos, 1, 'white');
+        context.quadraticCurveTo(xpos + 155, ypos, xpos + 155, ypos + 5);
+
+        context.lineTo(xpos + 155, ypos + 155);
+        context.quadraticCurveTo(xpos + 155, ypos + 160, xpos + 150, ypos + 160);
+
+        context.lineTo(xpos, ypos + 160);
+        context.quadraticCurveTo(xpos - 5, ypos + 160, xpos - 5, ypos + 155);
+
+        context.lineTo(xpos - 5, ypos + 5);
+        context.quadraticCurveTo(xpos - 5, ypos, xpos, ypos);
+          
+        context.fill();
+        context.lineWidth = 5;
+        context.stroke();
+
+        context.lineWidth = 1;
+
+
+        //작은 로고 그리기
+        context.fillStyle = 'black';
+
+        context.beginPath();
+        context.arc(xpos + 5, ypos + 8, 6, 0, Math.PI*2);
+        context.fill();
+
+        context.beginPath();
+        context.arc(xpos + 5, ypos + 8, 3.5, 0, Math.PI*2);
+        context.stroke();
+
+        context.fillStyle = 'white';
+        context.beginPath();
+        context.arc(xpos + 5, ypos + 8, 1, 0, Math.PI*2);
+        context.fill();
+      
+        drawText('TOP', xpos + 5, ypos + 45, '21px tahoma', 1, 'black');
+
+        context.strokeStyle = 'black';
+        context.font = '23px tahoma';
+        context.strokeText('100', xpos + 45, ypos + 45);
+        context.strokeStyle = 'white';
+
+        drawText(this.textInBox, xpos + 5, ypos + 70, '20px tahoma', 1, 'black');
+
+        context.strokeStyle = 'black';
+        context.strokeText('SOUTH KOREA', xpos, ypos + 150);
+        context.strokeStyle = 'white';
+
+        if (this.textInBox == 'SONGS') {
+
+          context.lineWidth = 9;
+          context.strokeStyle = '#B82837';
+
+          context.beginPath();
+          context.arc(xpos + 140, ypos + 90, 25, 0, Math.PI*2);
+          context.stroke();
+
+          context.lineWidth = 1;
+          context.strokeStyle = 'white';
+
+          context.fillStyle = '#124A9F';
+          context.globalAlpha = 0.8;
+
+          context.beginPath();
+          context.arc(xpos + 105, ypos + 100, 30, 0, Math.PI*2);
+          context.fill();
+
+          context.fillStyle = 'black';
+          context.globalAlpha = 1;
+
+          context.fillRect(xpos + 158, ypos + 50, 20, 70);
+          context.fillStyle = 'white';
+    
+        }
+
+        else {
+          context.lineWidth = 9;
+          context.strokeStyle = '#B82837';
+          context.lineJoin = "miter";
+
+          context.strokeRect(xpos + 65, ypos + 85, 60, 35);
+          context.strokeStyle = 'white';
+
+          context.fillStyle = '#124A9F';
+          context.globalAlpha = 0.8;
+
+          context.fillRect(xpos + 90, ypos + 100, 68, 45);
+          context.fillStyle = 'white';
+
+          context.globalAlpha = 1;
+        }
+
+      }
+
+
+        function drawMusicBox() {
+            let isPlaying = false;
+            context.fillStyle = '#1E1E1E';
+            context.fillRect(0, 710, canvas.width, 60);
+
+            drawImage(0, 710, 60, 60, 'resource/FRDavid.jpeg');
+
+            drawText('Words', 85, 735, '18px century', 1, 'white');
+
+            context.font = '15px century';
+            context.fillText('F.R. David', 85, 755);
+
+            //삼각형 그리기
+            const playBtn = new Path2D();
+            playBtn.arc(315, 740, 15, 0, Math.PI*2);
+            context.globalAlpha = 0;
+            context.stroke(playBtn);
+            context.globalAlpha = 1;
+
+            canvas.addEventListener('mousedown', function(event) {
+              if (context.isPointInPath(playBtn, event.offsetX, event.offsetY)) {
+                
+                  if (isPlaying == false) {
+                    
+                    music.play();
+                    isPlaying = true;
+
+                    context.clearRect(300, 720, 30, 30);
+                    context.fillStyle = '#1E1E1E';
+                    context.fillRect(300, 720, 30, 30);
+
+                    context.fillStyle = 'white'
+                    drawStopBtn();
+
+                    } else {
+
+                    music.pause();
+                    isPlaying = false;
+
+                    context.clearRect(300, 720, 30, 30);
+                    context.fillStyle = '#1E1E1E';
+                    context.fillRect(300, 720, 30, 30);
+
+                    context.fillStyle = 'white';
+                    drawPlayBtn();
+
+                    }
+
+                }
+            })
+
+            function drawPlayBtn() {
+              context.beginPath();
+              context.moveTo(310, 750);
+              context.lineTo(310, 730);
+              context.lineTo(325, 740);
+              context.closePath();
+              context.fill();
+            }
+
+            function drawStopBtn() {
+              context.fillRect(308, 730, 5, 20);
+              context.fillRect(317, 730, 5, 20);
+            }
+            
+            drawPlayBtn();
+            context.fillStyle = 'white';
+            
+            
+            //엑스 그리기
+            drawLine(357, 732, 373, 748, 2, 'white');
+            drawLine(373, 732, 357, 748, 2, 'white');
+            
+            context.fillStyle = 'gray';
+            context.fillRect(0, 770, canvas.width, 1);
+            context.fillStyle = 'white';
+            context.fillRect(0, 770, 100, 1);
+            
+            context.lineWidth = 1;
+        }
+
+        function drawHomeIcon(color) {
+
+            const homeBtn = new Path2D();
+            homeBtn.arc(70, 800, 20, 0, Math.PI*2);
+            context.globalAlpha = 0;
+            context.stroke(homeBtn);
+            context.globalAlpha = 1;
+
+            canvas.addEventListener('mousedown', function(event) {
+              if (context.isPointInPath(homeBtn, event.offsetX, event.offsetY)) {
+                context.clearRect(0,0, canvas.width, canvas.height);
+                drawFirstScreen();
+              }
+
+            })
+
+          context.fillStyle = color;
+            //지붕
+            context.beginPath();
+            context.moveTo(60, 795);
+            context.lineTo(86, 795);
+            context.lineTo(73, 785);
+            context.fill();
+
+            context.fillRect(64, 795, 18, 5);
+            context.fillRect(64, 800, 6, 5);
+            context.fillRect(76, 800, 6, 5);
+          
+            drawText('Home', 60, 820, '10px century', 0.1, 'white');
+
+            context.fillStyle = 'white';
+        }
+
+        function drawExploreIcon(color) {
+
+            const exploreBtn = new Path2D();
+            exploreBtn.arc(200, 800, 20, 0, Math.PI*2);
+            context.globalAlpha = 0;
+            context.stroke(exploreBtn);
+            context.globalAlpha = 1;
+
+            canvas.addEventListener('mousedown', function(event) {
+              if (context.isPointInPath(exploreBtn, event.offsetX, event.offsetY)) {
+                context.clearRect(0,0, canvas.width, canvas.height);
+                drawSecondScreen();
+              }
+
+            })
+
+          context.fillStyle = color;
+
+          context.beginPath()
+          context.arc(200, 795, 12, 0, Math.PI*2);
+          context.fill();
+
+          //삼각형 두개
+          context.fillStyle = '#222222';
+          
+          context.beginPath();
+          context.moveTo(206, 787);
+          context.lineTo(198, 793);
+          context.lineTo(202, 797);
+          context.fill();
+
+          context.beginPath();
+          context.moveTo(194, 803);
+          context.lineTo(198, 793);
+          context.lineTo(202, 797);
+          context.fill();
+          
+          context.fillStyle = color;
+          context.beginPath();
+          context.arc(200, 795, 1, 0, Math.PI*2);
+          context.fill();
+          drawText('Explore', 185, 820, '10px century', 0.1, 'white');
+
+
+          context.fillStyle = 'white';
+        }
+        
+
+        function drawLibraryIcon(color) {
+
+            const libBtn = new Path2D();
+            libBtn.arc(335, 795, 20, 0, Math.PI*2);
+            context.globalAlpha = 0;
+            context.stroke(libBtn);
+            context.globalAlpha = 1;
+
+            canvas.addEventListener('mousedown', function(event) {
+              if (context.isPointInPath(libBtn, event.offsetX, event.offsetY)) {
+                context.clearRect(0,0, canvas.width, canvas.height);
+                drawThirdScreen();
+              }
+
+            })
+
+            context.strokeStyle = color;
+            context.fillStyle = color;
+
+            context.lineJoin = 'round';
+            context.lineWidth = 2;
+
+            context.beginPath();
+            context.moveTo(325, 783);
+            context.lineTo(325, 803);
+            context.lineTo(345, 803);
+            context.stroke();
+            
+            
+            context.fillRect(328, 780, 20, 20);
+            
+            //음표
+            context.fillStyle = '#222222';
+            context.beginPath();
+            context.arc(336, 793, 3, 0, Math.PI*2);
+            context.fill();
+            
+            drawLine(338, 793, 340, 784, 1, 'black');
+            drawLine(339, 784, 343, 784, 2, 'black');
+            
+
+            context.strokeStyle = 'white';
+            context.fillStyle = 'white';
+            drawText('Library', 323, 820, '10px century', 0.1, 'white');
+        }
+
+        function drawThreeIcons() {
+
+          //연필
+          context.beginPath();
+          context.moveTo(195, 257);
+          context.lineTo(195, 252);
+          context.lineTo(200, 257);
+          context.fill();
+
+          context.lineTo(217, 240);
+          context.lineTo(212, 235);
+          context.lineTo(195, 252);
+
+          context.fill();
+          
+          context.lineWidth = 1;
+          context.strokeStyle = 'black';
+          context.beginPath();
+          context.moveTo(202, 232);
+          context.lineTo(218, 248);
+          context.stroke();
+
+
+          context.strokeStyle = 'white';
+
+          //다운로드
+          context.lineWidth = 2.5;
+          context.beginPath();
+          context.moveTo(255, 257);
+          context.lineTo(270, 257);
+          context.stroke();
+
+          context.beginPath();
+          context.moveTo(262, 255);
+          context.lineTo(255, 247);
+          context.lineTo(270, 247);
+          context.fill();
+
+          context.fillRect(259, 240, 7, 7);
+
+          //땡땡이
+          drawtridots(310, 242, 2);
+
+          context.lineWidth = 1;
+  
+
+        }
+
+        function drawLongLine(ypos) {
+          
+          context.fillStyle = 'white';
+          context.lineWidth = 0.2;
+          context.beginPath();
+          context.moveTo(0, ypos);
+          context.lineTo(canvas.width, ypos);
+          context.stroke();
+
+          context.lineWidth = 1
+        }
+
+
+        function drawTextForTop100Box() {
+
+        context.font = '16px tahoma';
+        context.fillText('Top 100 Songs South', 13, 385);
+        context.fillText('Korea', 13, 405);
+
+        context.fillText('Top 100 Music Videos', 190, 385);
+        context.fillText('South Korea', 190, 405);
+
+        context.fillText('Trend', 370, 385);
+        context.fillText('Korea', 370, 405);
+
+
+        context.globalAlpha = 0.6;
+        context.font = '15px tahoma';
+        context.fillText('Chart · YouTube Music', 13, 425);
+        context.fillText('Chart · YouTube Music', 190, 425);
+        context.fillText('Chart · YouTube Music', 370, 425);
+        
+        context.globalAlpha = 1;
+        }
+
+        function Playlist(src, title, singer, time) {
+          if (this instanceof Playlist == false) {
+              console.warn('Forgot to call with new');
+          }
+
+          this.src = src;
+          this.title = title;
+          this.singer = singer;
+          this.time = time;
+        }
+        
+        Playlist.prototype.drawlist = function(ypos) {
+          drawImage(10, ypos, 52, 52, this.src);
+          drawtridots(380, ypos + 24, 1.5);
+
+          drawText(this.title, 80, ypos + 18, '16px century', 0.1, 'white');
+
+          context.font = '16px century';
+          context.globalAlpha = 0.6;
+          context.fillText(this.singer + " · " + this.time, 80, ypos + 40);
+
+          context.globalAlpha = 1;
+        }
+
+
+        //////////////////////////////////////////////////////////////////////
+        ////////////////////////////// 첫번째 화면 //////////////////////////////
+        //////////////////////////////////////////////////////////////////////
+
+
+      function drawFirstScreen() {
+        
+        drawLongLine(100);
+
+
+        drawText("Top songs", 13, 140, '25px Verdana', 2, 'white');
+        drawText("SEE ALL", canvas.width - 70, 140, '15px Verdana', 0.1, 'white');
+
+        //image, rank, isUp, singer, title
+        new TopSongs('resource/beatles.jpeg', 1, true, "The Beatles", "Hey Jude").draw(13, 170);
+        new TopSongs('resource/oasis.jpeg', 2, false, "Oasis", "Champagne Supernova").draw(13, 240);
+        new TopSongs('resource/aha.jpeg', 3, true, "A-Ha", "Take on Me").draw(13, 305);
+        new TopSongs('resource/radiohead.jpeg', 4, false, "RadioHead", "No Surprises").draw(13, 370);
+
+        drawImage(355, 170, 50, 250, "resource/side.jpeg");
+        drawText("Moods & genres", 13, 500, '25px Verdana', 2);
+        drawText("SEE ALL", canvas.width - 70, 500, '15px Verdana', 0.1);
+
+        new Genre('Rock', '#CC0002').drawRect(10, 525, false);
+        new Genre('2010s', '#A2FFA4').drawRect(10, 595, false);
+        new Genre('Korean Ballad', '#A1C3FC').drawRect(10, 665, false);
+        new Genre('Seasonal', '#FFE77F').drawRect(190, 525, false);
+        new Genre('Holiday', '#05A513').drawRect(190, 595, false);
+        new Genre('Chill', '#A2C5FE').drawRect(190, 665, false);
+        new Genre('R', '#CC0002').drawRect(370, 525, true);
+        new Genre('R', '#800080').drawRect(370, 595, true);
+        new Genre('F', '#05A513').drawRect(370, 665, true);
+
+
+        drawMusicBox();
+        drawAllBackground();
+
+        drawHomeIcon('white');
+        drawExploreIcon('darkgray');
+        drawLibraryIcon('darkgray');  
+
+        page = 1;
+      }
+
+    
+      //////////////////////////////////////////////////////////////////////
+        ////////////////////////////// 두번째 화면 //////////////////////////////
+        //////////////////////////////////////////////////////////////////////
+
+      function drawSecondScreen() {
+
+        drawLongLine(120);
+        drawLongLine(180);
+
+        new Theme('Workout').drawTheme(30, 60);
+        new Theme('Focus').drawTheme(140, 40);
+        new Theme('Relax').drawTheme(230, 40);
+        new Theme('Commute').drawTheme(320, 70);
+
+        new Top100Box('SONGS').drawBox(15, 200);
+        new Top100Box('MUSIC VIDEOS').drawBox(195, 200);
+        new Top100Box('20').drawBox(375, 200);
+
+        drawTextForTop100Box();
+
+        drawText('Live performances', 13, 480, '25px tahoma', 1.5);
+        drawImage(3, 500, 400, 175, "resource/benee.jpeg");
+
+        context.font = '15px tahoma';
+        context.fillText('Benee Performs \'Soaked\' on TRL', 13, 690);
+        context.fillText('Maniac', 310, 690);
+
+        context.font = '14px tahoma';
+        context.globalAlpha = 0.6;
+        context.fillText('MTV AUSTRALIA · 296K views', 13, 710);
+        context.fillText('Conan Gray', 310, 710);
+        context.globalAlpha = 1;
+
+        drawMusicBox();
+        drawAllBackground();
+
+        drawHomeIcon('darkgray');
+        drawExploreIcon('white');
+        drawLibraryIcon('darkgray'); 
+
+        page = 2;
+      }
+
+      //////////////////////////////////////////////////////////////////////
+        ////////////////////////////// 세번째 화면 //////////////////////////////
+        //////////////////////////////////////////////////////////////////////
+
+      function drawThirdScreen() {
+        drawTopBar();
+        drawMusicBox();
+
+        context.fillStyle = '#222222';
+        context.fillRect(0, 772, canvas.width, 100);
+        context.fillStyle = 'white';
+
+        drawHomeIcon('darkgray');
+        drawExploreIcon('darkgray');
+        drawLibraryIcon('white'); 
+
+        context.lineWidth = 3;
+        context.moveTo(30, 60);
+        context.lineTo(20, 70);
+        context.lineTo(30, 80);
+        context.stroke();
+
+        drawDeviceIcon(320, 60);
+        drawGlassIcon(canvas.width - 30, 60, 15);
+
+        drawImage(10, 115, 85, 85, 'resource/kenny.jpeg');
+        drawImage(95, 115, 85, 85, 'resource/beegees.jpeg');
+        drawImage(10, 200, 85, 85, 'resource/eagles.jpeg');
+        drawImage(95, 200, 85, 85, 'resource/topgun.jpeg');
+
+        drawText('2021', 195, 160, '25px tahoma', 2, 'white');
+
+        context.font = '16px century';
+        context.globalAlpha = 0.6;
+        context.fillText('by 식빵곤듀', 195, 190);
+        context.fillText('Playlist · 20 songs', 195, 210);
+        context.globalAlpha = 1;
+
+        context.fillRect(10, 310, 180, 40);
+        context.strokeRect(210, 310, 170, 40);
+
+        drawText('SHUFFLE', 80, 337, '16px century', 0.1, 'black');
+        drawText('PLAY', 290, 335, '16px century', 0.1, 'white');
+
+        context.strokeStyle = 'black';
+        context.lineWidth = 2;
+        context.beginPath();
+        context.moveTo(50, 325);
+        context.bezierCurveTo(57, 320, 64, 340, 71, 335);
+        context.stroke();
+
+        context.beginPath();
+        context.moveTo(50, 335);
+        context.bezierCurveTo(57, 340, 64, 320, 71, 325);
+        context.stroke();
+
+        context.beginPath();
+        context.moveTo(265, 322);
+        context.lineTo(279, 330);
+        context.lineTo(265, 337);
+        context.fill();
+
+        drawLine(67, 331, 71, 335, 2, 'black');
+        drawLine(67, 339, 71, 335, 2, 'black');
+
+        drawLine(67, 321, 71, 325, 2, 'black');
+        drawLine(67, 329, 71, 325, 2, 'black');
+       
+      
+        new Playlist('resource/kenny.jpeg', 'Footloose', 'Kenny Loggins', '3:47').drawlist(380);
+        new Playlist('resource/beegees.jpeg', 'How Deep Is Your Love', 'Bee Gees', '4:05').drawlist(445);
+        new Playlist('resource/eagles.jpeg', 'Hotel California', 'Eagles', '7:26').drawlist(510);
+        new Playlist('resource/topgun.jpeg', 'Take My Breath Away', 'Berlin', '4:12').drawlist(575);
+        new Playlist('resource/carpenters.jpeg', '(They Long To Be) Close To You', 'Carpenters', '3:43').drawlist(640);
+
+
+        drawThreeIcons();
+        drawLine(339, 784, 343, 784, 2, 'black');
+
+        page = 3;
+      }
+
+
+      drawFirstScreen();
+
+
+  </script>
+</body>
+
+</html>
